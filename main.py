@@ -9,34 +9,46 @@ pygame.init()
 # Set up the drawing window
 screen = pygame.display.set_mode([1200, 1200])
 
+# Game start time
+game_start_time: float | None = None
+
 # Initialize font
 font = pygame.font.Font(None, 36)
 
 # High score file
 highscore_file = "highscore.txt"
 
-# Initialize variables
-ball_pos = [600, 600]
-ball_speed = [0.75, 0.75]
-ball_radius = 20
-banana_pos = [random.randint(0, 1200), random.randint(0, 1200)]
-butterfly_pos = None
-butterfly_speed = 0.20
-butterfly_active = False
-bananas_eaten = 0
+# Initialize variables with explicit type annotations
+ball_pos: list[float] = [600.0, 600.0]      # Use floats since speed is float
+ball_speed: list[float] = [0.75, 0.75]
+ball_radius: int = 20
+banana_pos: list[int] = [random.randint(0, 1200), random.randint(0, 1200)]
+butterfly_pos: list[int] | None = None       # Will hold [x, y] or None
+butterfly_speed: float = 0.20
+butterfly_active: bool = False
+bananas_eaten: int = 0
+running: bool = False                        # Need to declare this globally
+highscore: int = 0
+highscore_name: str = "Anonymous"
 
 # Load high score from file
 if os.path.exists(highscore_file):
     with open(highscore_file, "r") as file:
-        highscore_data = file.read().split(',')
-        highscore = int(highscore_data[0])
-        highscore_name = highscore_data[0]
+        content = file.read().strip()
+        if content:
+            highscore_parts = content.split(',')
+            if len(highscore_parts) >= 1:
+                highscore = int(highscore_parts[0])
+            if len(highscore_parts) >= 2:
+                highscore_name = highscore_parts[1]
+            else:
+                highscore_name = "Anonymous"
 else:
     highscore = 0
     highscore_name = "Anonymous"
     
 # Function to get player name
-def get_player_name():
+def get_player_name() -> str:
     player_name = ""
     input_active = True
     while input_active:
@@ -60,7 +72,7 @@ def get_player_name():
     return player_name
 
 # Function to display the start menu
-def start_menu():
+def start_menu() -> None:
     menu_active = True
     while menu_active:
         for event in pygame.event.get():
@@ -91,7 +103,7 @@ def start_menu():
         pygame.display.flip()
 
 # Function to display high scores
-def display_high_scores():
+def display_high_scores() -> None:
     highscore_active = True
     while highscore_active:
         for event in pygame.event.get():
@@ -114,9 +126,10 @@ def display_high_scores():
         pygame.display.flip()
 
 # Function to reset game variables
-def reset_game():
+def reset_game() -> None:
     global ball_pos, ball_speed, ball_radius, banana_pos, butterfly_pos, butterfly_active, bananas_eaten, game_start_time, butterfly_speed
-    ball_pos = [600, 600]
+    
+    ball_pos = [600.0, 600.0]           # No type annotation here
     ball_speed = [0.75, 0.75]
     ball_radius = 10
     banana_pos = [random.randint(0, 1200), random.randint(0, 1200)]
@@ -124,11 +137,11 @@ def reset_game():
     butterfly_active = False
     bananas_eaten = 0
     game_start_time = time.time()
-    butterfly_speed = 0.20  # Initialize butterfly speed
+    butterfly_speed = 0.20
 
 
 # Main game loop
-def main_game():
+def main_game() -> None:
     global running, ball_pos, ball_speed, ball_radius, banana_pos, butterfly_pos, butterfly_active, bananas_eaten, game_start_time, butterfly_speed, highscore, highscore_name
     running = True
     reset_game()
@@ -167,21 +180,26 @@ def main_game():
             butterfly_active = True
 
         if butterfly_active:
-            butterfly_rect = pygame.Rect(butterfly_pos[0] - 25, butterfly_pos[1] - 25, 50, 50)
-            new_x = butterfly_pos[0]
-            new_y = butterfly_pos[1]
-            if butterfly_pos[0] < ball_pos[0]:
-                new_x += butterfly_speed
-            if butterfly_pos[0] > ball_pos[0]:
-                new_x -= butterfly_speed
-            if butterfly_pos[1] < ball_pos[1]:
-                new_y += butterfly_speed
-            if butterfly_pos[1] > ball_pos[1]:
-                new_y -= butterfly_speed
-            butterfly_pos[0] = new_x
-            butterfly_pos[1] = new_y
-            if ball_rect.colliderect(butterfly_rect):
-                running = False
+            if butterfly_pos is not None:
+           
+                butterfly_rect = pygame.Rect(butterfly_pos[0] - 25, butterfly_pos[1] - 25, 50, 50)
+                
+                new_x: float = float(butterfly_pos[0])
+                new_y: float = float(butterfly_pos[1])
+                
+                if butterfly_pos[0] < ball_pos[0]:
+                    new_x += butterfly_speed
+                elif butterfly_pos[0] > ball_pos[0]: 
+                    new_x -= butterfly_speed
+                
+                if butterfly_pos[1] < ball_pos[1]:
+                    new_y += butterfly_speed
+                elif butterfly_pos[1] > ball_pos[1]:
+                    new_y -= butterfly_speed
+                
+                butterfly_pos[0] = int(round(new_x))
+                butterfly_pos[1] = int(round(new_y))
+                
 
         screen.fill((0, 0, 0))
         pygame.draw.circle(screen, (0, 0, 255), ball_pos, ball_radius)
